@@ -21,9 +21,34 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Grade example tests (expect mixed results)
+      - name: Grade good example (must pass A)
         run: node bin/qualitymax-grader.js examples/good-test.spec.ts --min-grade A --verbose
 
-      - name: JSON output for CI
+      - name: Grade all examples (expect mixed results)
+        run: |
+          node bin/qualitymax-grader.js examples/*.spec.ts --json --min-grade F > grade-results.json
+          echo "=== Summary ==="
+          cat grade-results.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log('Files:', d.summary.files, '| Avg:', d.summary.averageGrade, '('+d.summary.averageScore+'/100)');"
+
+      - name: Verify good test scores A
+        run: |
+          GRADE=$(node -e "const {gradeTest}=require('./lib/grader'); const fs=require('fs'); const r=gradeTest(fs.readFileSync('examples/good-test.spec.ts','utf8'),'good-test.spec.ts'); console.log(r.grade);")
+          echo "Good test grade: $GRADE"
+          [ "$GRADE" = "A" ] || (echo "FAIL: expected A, got $GRADE" && exit 1)
+
+      - name: Verify bad test scores D or F
+        run: |
+          GRADE=$(node -e "const {gradeTest}=require('./lib/grader'); const fs=require('fs'); const r=gradeTest(fs.readFileSync('examples/bad-test.spec.ts','utf8'),'bad-test.spec.ts'); console.log(r.grade);")
+          echo "Bad test grade: $GRADE"
+          [ "$GRADE" = "D" ] || [ "$GRADE" = "F" ] || (echo "FAIL: expected D or F, got $GRADE" && exit 1)
+
+      - name: Verify --version flag
+        run: node bin/qualitymax-grader.js --version
+
+      - name: Upload grade results
         if: always()
-        run: node bin/qualitymax-grader.js examples/*.spec.ts --json --min-grade F || true
+        uses: actions/upload-artifact@v4
+        with:
+          name: grade-results
+          path: grade-results.json
+          retention-days: 7
