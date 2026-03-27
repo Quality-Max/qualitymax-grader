@@ -1,0 +1,42 @@
+{
+  "name": "qualitymax-grader",
+  "version": "0.1.0",
+  "description": "Grade your Playwright tests A-F. Lighthouse for test quality.",
+  "main": "lib/grader.js",
+  "bin": {
+    "qualitymax-grader": "bin/qualitymax-grader.js"
+  },
+  "scripts": {
+    "test": "node bin/qualitymax-grader.js examples/*.spec.ts",
+    "grade": "node bin/qualitymax-grader.js"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "quality",
+    "grader",
+    "lint",
+    "test-quality",
+    "e2e",
+    "automation"
+  ],
+  "author": "QualityMax <hello@qualitymax.io>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quality-Max/qualitymax-grader.git"
+  },
+  "homepage": "https://qualitymax.io",
+  "dependencies": {
+    "glob": "^11.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "LICENSE",
+    "README.md"
+  ]
+}
