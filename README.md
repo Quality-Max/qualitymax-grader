@@ -1,6 +1,11 @@
 # qualitymax-grader
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/Quality-Max/qualitymax-grader/actions/workflows/test.yml/badge.svg)](https://github.com/Quality-Max/qualitymax-grader/actions)
+[![npm](https://img.shields.io/npm/v/qualitymax-grader)](https://www.npmjs.com/package/qualitymax-grader)
+![Grade: A](https://img.shields.io/badge/examples_grade-A_|_B_|_D_|_F-8b5cf6?style=flat&logo=playwright&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-89_passing-22c55e)
+![Checks](https://img.shields.io/badge/checks-17_rules-3b82f6)
 
 **Lighthouse for test quality.** Grade your Playwright tests A-F with a single command.
 
