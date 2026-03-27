@@ -102,8 +102,8 @@ Selectors are scored by reliability:
 
 | Selector Pattern | Score | Stability |
 |-----------------|-------|-----------|
-| `data-testid`, `data-test` | +3 | Best |
-| `getByRole` with `name` | +2 | Good |
+| `getByRole` with `name` | +3 | Best |
+| `data-testid`, `data-test` | +2 | Good |
 | `getByText`, `getByLabel` | +1 | Okay |
 | CSS class selector | 0 | Neutral |
 | `nth-child`, `:first-child` | -2 | Fragile |

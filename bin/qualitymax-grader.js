@@ -45,12 +45,15 @@ function parseArgs(argv) {
     json: false,
     verbose: false,
     help: false,
+    version: false,
   };
 
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') {
       args.help = true;
+    } else if (arg === '--version' || arg === '-V') {
+      args.version = true;
     } else if (arg === '--json') {
       args.json = true;
     } else if (arg === '--verbose' || arg === '-v') {
@@ -106,6 +109,11 @@ async function main() {
 
   if (args.help) {
     showHelp();
+    process.exit(0);
+  }
+
+  if (args.version) {
+    console.log(VERSION);
     process.exit(0);
   }
 
@@ -214,8 +222,10 @@ async function main() {
 
   console.log();
   console.log(`  ${color.bold}Summary:${color.reset} ${results.length} files graded | Average: ${gradeColor(avgGrade)}${avgGrade}${color.reset} (${avgScore}/100) | ${color.green}Passed: ${passed}${color.reset} | ${color.red}Failed: ${failed}${color.reset}`);
-  console.log();
-  console.log(`  ${color.dim}Fix low grades automatically \u2192${color.reset} ${color.cyan}${color.bold}https://qualitymax.io${color.reset}`);
+  if (failed > 0) {
+    console.log();
+    console.log(`  ${color.dim}Fix low grades automatically \u2192${color.reset} ${color.cyan}${color.bold}https://qualitymax.io${color.reset}`);
+  }
   console.log();
 
   process.exit(failed > 0 ? 1 : 0);

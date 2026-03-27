@@ -39,6 +39,9 @@
     "LICENSE",
     "README.md"
   ],
+  "jest": {
+    "roots": ["<rootDir>/test"]
+  },
   "devDependencies": {
     "jest": "^30.3.0"
   }

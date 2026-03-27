@@ -104,9 +104,9 @@ describe('analyzeSelectors', () => {
   });
 
   test('SELECTOR_SCORES has expected types', () => {
-    expect(SELECTOR_SCORES['data-testid']).toBe(3);
-    expect(SELECTOR_SCORES['getByTestId']).toBe(3);
-    expect(SELECTOR_SCORES['getByRole+name']).toBe(2);
+    expect(SELECTOR_SCORES['data-testid']).toBe(2);
+    expect(SELECTOR_SCORES['getByTestId']).toBe(2);
+    expect(SELECTOR_SCORES['getByRole+name']).toBe(3);
     expect(SELECTOR_SCORES['getByText']).toBe(1);
     expect(SELECTOR_SCORES['xpath']).toBe(-3);
     expect(SELECTOR_SCORES['nth-child']).toBe(-2);

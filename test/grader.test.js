@@ -91,8 +91,8 @@ test.describe('suite', () => {
   test('require import detection', () => {
     const result = gradeTest(wrapper("const { test, expect } = require('@playwright/test');"), 'test.spec.js');
     const check = result.checks.find(c => c.id === 'imports');
-    // require() may or may not match depending on regex — test that check exists
-    expect(check).toBeDefined();
+    expect(check.earned).toBe(15);
+    expect(check.passed).toBe(true);
   });
 
   test('no import gives 0 points', () => {
@@ -272,6 +272,99 @@ test('t', async ({ page }) => {
     const check = result.checks.find(c => c.id === 'no_timeout');
     expect(check).toBeDefined();
     expect(check.earned).toBeLessThan(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// Critical Anti-Pattern Checks
+// ═══════════════════════════════════════════════════════════
+
+describe('critical anti-pattern checks', () => {
+  const wrapper = (body) => `import { test, expect } from '@playwright/test';
+test.describe('suite', () => {
+  ${body}
+});`;
+
+  test('test.only() gets -10 penalty', () => {
+    const code = wrapper(`test.only('focused', async ({ page }) => {
+    await page.goto('https://example.com');
+    await expect(page).toHaveTitle(/Example/);
+    await expect(page.locator('h1')).toBeVisible();
+    await page.click('[data-testid="btn"]');
+    await page.fill('[data-testid="input"]', 'value');
+    await expect(page.locator('.result')).toHaveText('done');
+  });`);
+    const result = gradeTest(code, 'test.spec.ts');
+    const check = result.checks.find(c => c.id === 'no_test_only');
+    expect(check).toBeDefined();
+    expect(check.earned).toBe(-10);
+    expect(check.passed).toBe(false);
+  });
+
+  test('test.skip() gets -1 warning', () => {
+    const code = wrapper(`test.skip('skipped', async ({ page }) => {
+    await page.goto('https://example.com');
+    await expect(page).toHaveTitle(/Example/);
+    await expect(page.locator('h1')).toBeVisible();
+    await page.click('[data-testid="btn"]');
+    await page.fill('[data-testid="input"]', 'value');
+    await expect(page.locator('.result')).toHaveText('done');
+  });`);
+    const result = gradeTest(code, 'test.spec.ts');
+    const check = result.checks.find(c => c.id === 'no_test_skip');
+    expect(check).toBeDefined();
+    expect(check.earned).toBe(-1);
+    expect(check.passed).toBe(false);
+  });
+
+  test('page.pause() gets penalty (max -5)', () => {
+    const code = wrapper(`test('paused', async ({ page }) => {
+    await page.goto('https://example.com');
+    await page.pause();
+    await expect(page).toHaveTitle(/Example/);
+    await expect(page.locator('h1')).toBeVisible();
+    await page.click('[data-testid="btn"]');
+    await page.fill('[data-testid="input"]', 'value');
+    await expect(page.locator('.result')).toHaveText('done');
+  });`);
+    const result = gradeTest(code, 'test.spec.ts');
+    const check = result.checks.find(c => c.id === 'no_pause');
+    expect(check).toBeDefined();
+    expect(check.earned).toBe(-2);
+    expect(check.passed).toBe(false);
+  });
+
+  test('debugger statement gets penalty (max -5)', () => {
+    const code = wrapper(`test('debug', async ({ page }) => {
+    await page.goto('https://example.com');
+    debugger;
+    await expect(page).toHaveTitle(/Example/);
+    await expect(page.locator('h1')).toBeVisible();
+    await page.click('[data-testid="btn"]');
+    await page.fill('[data-testid="input"]', 'value');
+    await expect(page.locator('.result')).toHaveText('done');
+  });`);
+    const result = gradeTest(code, 'test.spec.ts');
+    const check = result.checks.find(c => c.id === 'no_debugger');
+    expect(check).toBeDefined();
+    expect(check.earned).toBe(-2);
+    expect(check.passed).toBe(false);
+  });
+
+  test('clean code has no anti-pattern penalties', () => {
+    const code = wrapper(`test('clean', async ({ page }) => {
+    await page.goto('https://example.com');
+    await expect(page).toHaveTitle(/Example/);
+    await expect(page.locator('h1')).toBeVisible();
+    await page.click('[data-testid="btn"]');
+    await page.fill('[data-testid="input"]', 'value');
+    await expect(page.locator('.result')).toHaveText('done');
+  });`);
+    const result = gradeTest(code, 'test.spec.ts');
+    expect(result.checks.find(c => c.id === 'no_test_only')).toBeUndefined();
+    expect(result.checks.find(c => c.id === 'no_test_skip')).toBeUndefined();
+    expect(result.checks.find(c => c.id === 'no_pause')).toBeUndefined();
+    expect(result.checks.find(c => c.id === 'no_debugger')).toBeUndefined();
   });
 });
 
