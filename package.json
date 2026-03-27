@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Grade your Playwright tests A-F. Lighthouse for test quality.",
   "main": "lib/grader.js",
+  "exports": {
+    ".": "./lib/grader.js",
+    "./reporter": "./lib/reporter.js"
+  },
   "bin": {
     "qualitymax-grader": "bin/qualitymax-grader.js"
   },

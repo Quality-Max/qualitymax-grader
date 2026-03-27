@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
 const { gradeTest } = require('../lib/grader');
+const { loadConfig, shouldIgnore } = require('../lib/config');
 
 const VERSION = require('../package.json').version;
 
@@ -41,9 +42,10 @@ function gradeColor(grade) {
 function parseArgs(argv) {
   const args = {
     patterns: [],
-    minGrade: 'B',
+    minGrade: null,
     json: false,
     verbose: false,
+    fix: false,
     help: false,
     version: false,
   };
@@ -58,6 +60,8 @@ function parseArgs(argv) {
       args.json = true;
     } else if (arg === '--verbose' || arg === '-v') {
       args.verbose = true;
+    } else if (arg === '--fix') {
+      args.fix = true;
     } else if (arg === '--min-grade') {
       args.minGrade = (argv[++i] || 'B').toUpperCase();
     } else if (arg.startsWith('--min-grade=')) {
@@ -87,6 +91,7 @@ function showHelp() {
     --min-grade <grade>   Minimum passing grade (A/B/C/D/F). Default: B
     --json                Output results as JSON (for CI)
     --verbose, -v         Show per-check breakdown for each file
+    --fix                 Show fix suggestions for each failing file
     --help, -h            Show this help message
 
   ${color.bold}Grade scale:${color.reset}
@@ -106,6 +111,12 @@ function meetsMinGrade(grade, minGrade) {
 
 async function main() {
   const args = parseArgs(process.argv);
+
+  // Load config file (.qualitymaxrc.json)
+  const config = loadConfig(process.cwd());
+
+  // CLI --min-grade overrides config; fall back to config, then default 'B'
+  const minGrade = args.minGrade || config.minGrade || 'B';
 
   if (args.help) {
     showHelp();
@@ -132,6 +143,11 @@ async function main() {
   // Deduplicate and sort
   files = [...new Set(files)].sort();
 
+  // Filter out ignored files from config
+  if (config.ignore && config.ignore.length > 0) {
+    files = files.filter(f => !shouldIgnore(f, config.ignore));
+  }
+
   if (files.length === 0) {
     if (args.json) {
       console.log(JSON.stringify({ error: 'No files matched the given patterns', files: [] }));
@@ -145,9 +161,9 @@ async function main() {
   const results = [];
   for (const file of files) {
     const code = fs.readFileSync(file, 'utf-8');
-    const result = gradeTest(code, file);
+    const result = gradeTest(code, file, { checks: config.checks });
     result.file = file;
-    result.passed = meetsMinGrade(result.grade, args.minGrade);
+    result.passed = meetsMinGrade(result.grade, minGrade);
     results.push(result);
   }
 
@@ -160,7 +176,7 @@ async function main() {
 
     const output = {
       version: VERSION,
-      minGrade: args.minGrade,
+      minGrade,
       summary: {
         files: results.length,
         averageScore: avgScore,
@@ -208,8 +224,17 @@ async function main() {
           : `${color.red}${check.earned}${color.reset}`;
         const checkIssue = check.issue ? `  ${color.dim}${check.issue}${color.reset}` : '';
         console.log(`    ${checkIcon} ${check.name} ${pts}${checkIssue}`);
+        if (!check.passed && check.suggestion) {
+          console.log(`       ${color.dim}^ ${check.suggestion}${color.reset}`);
+        }
       }
       console.log();
+    } else if (args.fix && !r.passed) {
+      // In non-verbose --fix mode, show top suggestion for each failing file
+      const failingCheck = r.checks.find(c => !c.passed && c.suggestion);
+      if (failingCheck) {
+        console.log(`    ${color.dim}^ ${failingCheck.suggestion}${color.reset}`);
+      }
     }
   }
 

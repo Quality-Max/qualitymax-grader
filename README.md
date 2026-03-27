@@ -96,6 +96,72 @@ jobs:
 
 The CLI exits with code 1 if any test falls below `--min-grade`, failing your CI pipeline.
 
+## Library Usage
+
+```js
+const { gradeTest, scoreToGrade, analyzeSelectors } = require('qualitymax-grader');
+
+const code = fs.readFileSync('test.spec.ts', 'utf-8');
+const result = gradeTest(code, 'test.spec.ts');
+// result: { score, grade, checks, issues }
+
+console.log(result.grade); // 'A'
+console.log(result.score); // 95
+console.log(result.checks); // [{ id, name, maxPoints, earned, passed, issue, suggestion }]
+```
+
+You can also pass options to disable specific checks:
+
+```js
+const result = gradeTest(code, 'test.spec.ts', {
+  checks: {
+    steps: { enabled: false },
+    navigation: { enabled: false },
+  },
+});
+```
+
+## Playwright Reporter
+
+Add the reporter to your `playwright.config.ts`:
+
+```ts
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  reporter: [
+    ['qualitymax-grader/reporter', { minGrade: 'B' }],
+  ],
+});
+```
+
+Options:
+- `minGrade` - Minimum grade to pass (default: `'B'`)
+- `verbose` - Show per-check breakdown (default: `false`)
+- `json` - Output JSON instead of pretty text (default: `false`)
+
+## Configuration
+
+Create a `.qualitymaxrc.json` file in your project root (or any parent directory):
+
+```json
+{
+  "minGrade": "B",
+  "checks": {
+    "steps": { "enabled": false },
+    "navigation": { "enabled": false }
+  },
+  "ignore": ["**/generated/**"]
+}
+```
+
+- **`minGrade`** - Default minimum grade (CLI `--min-grade` overrides this)
+- **`checks`** - Disable specific checks by setting `enabled: false`
+- **`ignore`** - Glob patterns for files to skip
+
+The grader walks up from the current directory looking for `.qualitymaxrc.json`, similar to how ESLint finds its config.
+
 ## Selector Stability Scoring
 
 Selectors are scored by reliability:
