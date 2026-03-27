@@ -6,6 +6,7 @@ const path = require('path');
 const { glob } = require('glob');
 const { gradeTest } = require('../lib/grader');
 const { loadConfig, shouldIgnore } = require('../lib/config');
+const { toJUnit, toSarif } = require('../lib/formatters');
 
 const VERSION = require('../package.json').version;
 
@@ -43,6 +44,7 @@ function parseArgs(argv) {
   const args = {
     patterns: [],
     minGrade: null,
+    format: 'text',
     json: false,
     verbose: false,
     fix: false,
@@ -58,6 +60,13 @@ function parseArgs(argv) {
       args.version = true;
     } else if (arg === '--json') {
       args.json = true;
+      args.format = 'json';
+    } else if (arg === '--format') {
+      args.format = (argv[++i] || 'text').toLowerCase();
+      if (args.format === 'json') args.json = true;
+    } else if (arg.startsWith('--format=')) {
+      args.format = arg.split('=')[1].toLowerCase();
+      if (args.format === 'json') args.json = true;
     } else if (arg === '--verbose' || arg === '-v') {
       args.verbose = true;
     } else if (arg === '--fix') {
@@ -89,7 +98,8 @@ function showHelp() {
 
   ${color.bold}Options:${color.reset}
     --min-grade <grade>   Minimum passing grade (A/B/C/D/F). Default: B
-    --json                Output results as JSON (for CI)
+    --format <fmt>        Output format: text (default), json, junit, sarif
+    --json                Alias for --format json
     --verbose, -v         Show per-check breakdown for each file
     --fix                 Show fix suggestions for each failing file
     --help, -h            Show this help message
@@ -167,8 +177,8 @@ async function main() {
     results.push(result);
   }
 
-  // JSON output mode
-  if (args.json) {
+  // Structured output modes (json, junit, sarif)
+  if (args.format !== 'text') {
     const totalScore = results.reduce((sum, r) => sum + r.score, 0);
     const avgScore = Math.round(totalScore / results.length);
     const passed = results.filter(r => r.passed).length;
@@ -193,7 +203,15 @@ async function main() {
         checks: r.checks,
       })),
     };
-    console.log(JSON.stringify(output, null, 2));
+
+    if (args.format === 'junit') {
+      console.log(toJUnit(output));
+    } else if (args.format === 'sarif') {
+      console.log(toSarif(output));
+    } else {
+      // json (default structured)
+      console.log(JSON.stringify(output, null, 2));
+    }
     process.exit(failed > 0 ? 1 : 0);
   }
 

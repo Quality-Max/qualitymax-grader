@@ -1,0 +1,34 @@
+name: 'QualityMax Test Grader'
+description: 'Grade Playwright tests A-F. Lighthouse for test quality.'
+branding:
+  icon: 'check-circle'
+  color: 'purple'
+inputs:
+  test-dir:
+    description: 'Glob pattern for test files'
+    required: true
+    default: 'tests/**/*.spec.ts'
+  min-grade:
+    description: 'Minimum passing grade (A/B/C/D/F)'
+    required: false
+    default: 'B'
+  comment:
+    description: 'Post grade summary as PR comment'
+    required: false
+    default: 'true'
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        npm install -g qualitymax-grader@0.2.0 2>/dev/null || npx qualitymax-grader@0.2.0 --version
+    - id: grade
+      shell: bash
+      run: |
+        npx qualitymax-grader@0.2.0 ${{ inputs.test-dir }} --json --min-grade ${{ inputs.min-grade }} > grade-results.json || true
+        SUMMARY=$(cat grade-results.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log('**Test Quality:** ' + d.summary.averageGrade + ' (' + d.summary.averageScore + '/100) | Passed: ' + d.summary.passed + ' | Failed: ' + d.summary.failed);")
+        echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+        echo "$SUMMARY"
+        # Check if any failed
+        FAILED=$(cat grade-results.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(d.summary.failed);")
+        if [ "$FAILED" != "0" ]; then exit 1; fi

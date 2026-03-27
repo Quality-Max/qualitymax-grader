@@ -1,6 +1,6 @@
 {
   "name": "qualitymax-grader",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Grade your Playwright tests A-F. Lighthouse for test quality.",
   "main": "lib/grader.js",
   "exports": {
@@ -12,7 +12,8 @@
   },
   "scripts": {
     "test": "jest test/",
-    "grade": "node bin/qualitymax-grader.js"
+    "grade": "node bin/qualitymax-grader.js",
+    "prepublishOnly": "npm test"
   },
   "keywords": [
     "playwright",
