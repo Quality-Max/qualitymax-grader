@@ -7,6 +7,8 @@
 ![Tests](https://img.shields.io/badge/tests-89_passing-22c55e)
 ![Checks](https://img.shields.io/badge/checks-17_rules-3b82f6)
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow?logo=buymeacoffee)](https://buymeacoffee.com/qualitymax)
+
 **Lighthouse for test quality.** Grade your Playwright tests A-F with a single command.
 
 ## Live Example
