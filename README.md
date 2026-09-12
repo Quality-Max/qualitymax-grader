@@ -1,5 +1,9 @@
 # qualitymax-grader
 
+[Standalone tools](https://docs.qualitymax.io/free-and-open-source/) · [QualityMax ecosystem](https://github.com/Quality-Max/qualitymax)
+
+Use the example grades below to understand the findings. A suite-quality grade assesses the configured checks; it is not proof that the application has no defects.
+
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CI](https://github.com/Quality-Max/qualitymax-grader/actions/workflows/test.yml/badge.svg)](https://github.com/Quality-Max/qualitymax-grader/actions)
 [![npm](https://img.shields.io/npm/v/qualitymax-grader)](https://www.npmjs.com/package/qualitymax-grader)
