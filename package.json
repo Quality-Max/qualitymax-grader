@@ -1,6 +1,6 @@
 {
   "name": "qualitymax-grader",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Grade your Playwright tests A-F. Lighthouse for test quality.",
   "main": "lib/grader.js",
   "exports": {
@@ -33,10 +33,10 @@
   },
   "homepage": "https://qualitymax.io",
   "dependencies": {
-    "glob": "^11.0.0"
+    "glob": "^13.0.6"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": "18 || 20 || >=22"
   },
   "files": [
     "bin/",
@@ -45,7 +45,9 @@
     "README.md"
   ],
   "jest": {
-    "roots": ["<rootDir>/test"]
+    "roots": [
+      "<rootDir>/test"
+    ]
   },
   "devDependencies": {
     "jest": "^30.3.0"
